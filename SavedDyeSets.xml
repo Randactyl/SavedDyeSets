@@ -1,0 +1,23 @@
+<Controls>
+	<TopLevelControl name="SavedDyeSetsTopLevel" hidden="false">
+		<!--<OnInitialized>
+			SavedDyeSets_Initialize(self)
+		</OnInitialized>-->
+
+		<Dimensions x="300" y="50"/>
+		<Anchor point="CENTER" relativeTo="GuiRoot" relativePoint="Center"/>
+
+		<Controls>
+			<Backdrop name="$(parent)Backdrop" edgeColor="FF0000" centerColor="6495ED" alpha="0.6">
+				<Dimensions x="300" y="50" />
+               	<Anchor point="TOPLEFT"  relativeTo="$(parent)" relativePoint="TOPLEFT"/>
+               	<Edge edgeSize="6" />
+            </Backdrop>
+
+            <Label name="$(parent)Label" font="ZoFontWinH1" color="ffffff" text="LEARNING!" verticalAlignment="CENTER" horizontalAlignment="LEFT"  alpha="0.85">
+                <Dimensions x="350" y="50" />
+               	<Anchor point="BOTTOMLEFT"  relativeTo="$(parent)" relativePoint="TOPLEFT"/>
+            </Label>
+        </Controls>
+    </TopLevelControl>
+</Controls>
