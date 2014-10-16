@@ -1,6 +1,8 @@
 local savedVars = nil
 local savedVarsVersion = "1.0"
 
+local SavedDyeSetsGroup = nil
+
 --[[local deleteButton = nil
 local saveButton = nil
 local loadButton = nil
@@ -130,10 +132,12 @@ local function CreateDeleteButton()
 end]]
 
 local function DyeStationClosed()
+    SavedDyeSetsGroup:SetHidden(true)
 	SLASH_COMMANDS["/dyeset"] = nil
 end
 
 local function DyeStationOpened()
+    SavedDyeSetsGroup:SetHidden(false)
     --[[deleteButton:SetHidden(false)
     saveButton:SetHidden(false)
    	loadButton:SetHidden(false)
@@ -172,15 +176,15 @@ end
 
 local function SavedDyeSetsOnLoaded(eventCode, addonName)
     if addonName ~= "SavedDyeSets" then return end
+    EVENT_MANAGER:UnregisterForEvent("SavedDyeSetsOnLoaded", EVENT_ADD_ON_LOADED)
 
     local default = {}
     savedVars = ZO_SavedVars:New("SavedDyeSets", savedVarsVersion, nil, default)
 
-    EVENT_MANAGER:UnregisterForEvent("SavedDyeSetsOnLoaded", EVENT_ADD_ON_LOADED)
     EVENT_MANAGER:RegisterForEvent("DyeStationOpened", EVENT_DYEING_STATION_INTERACT_START, DyeStationOpened)
     EVENT_MANAGER:RegisterForEvent("DyeStationClosed", EVENT_DYEING_STATION_INTERACT_END, DyeStationClosed)
 
-
+    SavedDyeSetsGroup = SavedDyeSetGroup:New()
     --[[CreateDeleteButton()
     CreateSaveButton()
     CreateLoadButton()

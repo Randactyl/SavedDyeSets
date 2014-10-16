@@ -1,6 +1,7 @@
 ## Title: Saved Dye Sets
-## APIVersion: 100008
+## APIVersion: 100009
 ## Version: 1.0
 ## SavedVariables: SavedDyeSets
 
+SavedDyeSetsGroup.lua
 SavedDyeSets.lua
