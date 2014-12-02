@@ -1,7 +1,5 @@
 local savedVars = nil
-local savedVarsVersion = "1.0"
-
-local SavedDyeSetsGroup = nil
+local savedVarsVersion = "1.1"
 
 local control = nil
 local dropdown = nil
@@ -14,9 +12,10 @@ local function LoadDyes(name)
     --local name = dropdown.entry --???
     --local primaryDyeId, secondaryDyeId, accentDyeId
 
-    if savedVars.dyeSets[name] then
+    if savedVars.setTable[name] then
         for i = 1, 4, 1 do
-            SetSavedDyeSetDyes(i, savedVars.dyeSets[name]["primary" .. i], savedVars.dyeSets[name]["secondary" .. i], savedVars.dyeSets[name]["accent" .. i])
+            SetSavedDyeSetDyes(i, savedVars.setTable[name]["primary" .. i], savedVars.setTable[name]["secondary" .. i],
+                savedVars.setTable[name]["accent" .. i])
         	DYEING:RefreshSavedSet(i)
         end
 
@@ -35,15 +34,15 @@ local function SaveDyes(name)
     for i = 1, 4, 1 do
         local primaryDyeId, secondaryDyeId, accentDyeId = GetSavedDyeSetDyes(i)
 
-        if savedVars.dyeSets[name] then
-        	savedVars.dyeSets[name]["primary" .. i] = primaryDyeId
-        	savedVars.dyeSets[name]["secondary" .. i] = secondaryDyeId
-        	savedVars.dyeSets[name]["accent" .. i] = accentDyeId
+        if savedVars.setTable[name] then
+        	savedVars.setTable[name]["primary" .. i] = primaryDyeId
+        	savedVars.setTable[name]["secondary" .. i] = secondaryDyeId
+        	savedVars.setTable[name]["accent" .. i] = accentDyeId
         else
-        	savedVars.dyeSets[name] = {}
-        	savedVars.dyeSets[name]["primary" .. i] = primaryDyeId
-        	savedVars.dyeSets[name]["secondary" .. i] = secondaryDyeId
-        	savedVars.dyeSets[name]["accent" .. i] = accentDyeId
+        	savedVars.setTable[name] = {}
+        	savedVars.setTable[name]["primary" .. i] = primaryDyeId
+        	savedVars.setTable[name]["secondary" .. i] = secondaryDyeId
+        	savedVars.setTable[name]["accent" .. i] = accentDyeId
         end
     end
 
@@ -53,8 +52,8 @@ end
 local function DeleteDyes(name)
     d("Deleting dye sets...")
     --local name = dropdown.entry --???
-    if savedVars.dyeSets[name] then
-    	savedVars.dyeSets[name] = nil
+    if savedVars.setTable[name] then
+    	savedVars.setTable[name] = nil
     	d("Dye sets deleted. (" .. name .. ")")
     else
     	d("Set does not exist.")
@@ -86,16 +85,16 @@ local function DyeStationOpened()
     	if options[1] == "load" then LoadDyes(options[2]) end
     	if options[1] == "save" then SaveDyes(options[2]) end
     	if options[1] == "delete" then DeleteDyes(options[2]) end
-    	if options[1] == "list" then
-    		for i,_ in pairs(savedVars["default"][GetUnitName("player")]) do
+    	--[[if options[1] == "list" then
+    		for i,_ in pairs(SavedDyeSetsData["default"][GetUnitName("player")]) do
     			if i ~= "version" then d(i) end
     		end
-    	end
+    	end]]
 	end
 end
 
-local function OnDropdownSelect(self)  --self?
-    LoadDyes()
+local function OnDropdownSelect(name)  --self?
+    LoadDyes(name)
 end
 
 local function OnButtonClicked(button)
@@ -110,9 +109,9 @@ local function PopulateDropdown()
     local comboBox = dropdown.m_comboBox
     comboBox:SetSortsItems(true)
 
-    for i,v in pairs(dyeSets) do
-        comboBox:AddItem(ZO_ComboBox:CreateItemEntry(tooltipSet[i], function()
-            OnDropdownSelect(v) end))
+    for i,_ in pairs(savedVars.setTable) do
+        comboBox:AddItem(ZO_ComboBox:CreateItemEntry(i, function()
+            OnDropdownSelect(i) end))
     end
 
     comboBox:SetSelectedItemFont("ZoFontGameSmall")
@@ -133,9 +132,10 @@ local function InitializeControls()
     dropdown:SetAnchor(LEFT, control, LEFT, 10, 0)
     dropdown:SetHeight(27)
     dropdown:SetWidth(136)
+    PopulateDropdown()
 
     saveButton = WINDOW_MANAGER:CreateControl(name .. "SaveDyesButton", control, CT_BUTTON)
-    saveButton:SetText("Save Sets")
+    saveButton:SetText("Save sets")
     saveButton:SetFont("ZoFontGameBold")
     saveButton:SetDimensions(73, 22)
     saveButton:SetAnchor(LEFT, dropdown, RIGHT, 5, 0)
@@ -148,7 +148,7 @@ local function InitializeControls()
     saveButton.save = true
 
     deleteButton = WINDOW_MANAGER:CreateControl(name .. "DeleteDyesButton", control, CT_BUTTON)
-    deleteButton:SetText("Delete Sets")
+    deleteButton:SetText("Delete sets")
     deleteButton:SetFont("ZoFontGameBold")
     deleteButton:SetDimensions(85, 22)
     deleteButton:SetAnchor(LEFT, saveButton, RIGHT, 5, 0)
@@ -165,9 +165,8 @@ local function SavedDyeSetsOnLoaded(eventCode, addonName)
     if addonName ~= "SavedDyeSets" then return end
     EVENT_MANAGER:UnregisterForEvent("SavedDyeSetsOnLoaded", EVENT_ADD_ON_LOADED)
 
-    local default = {}
-    savedVars = ZO_SavedVars:NewAccountWide("SavedDyeSets", savedVarsVersion, nil, default)
-    savedVars.dyeSets = savedVars.dyeSets or {}
+    local defaults = { setTable = {}, }
+    savedVars = ZO_SavedVars:New("SavedDyeSetsData", savedVarsVersion, nil, defaults)
 
     InitializeControls()
 
