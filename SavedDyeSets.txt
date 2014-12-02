@@ -1,7 +1,7 @@
 ## Title: Saved Dye Sets
 ## APIVersion: 100009
 ## Version: 1.0
+## Author: Randactyl
 ## SavedVariables: SavedDyeSets
 
-SavedDyeSetsGroup.lua
 SavedDyeSets.lua

@@ -3,10 +3,10 @@ local savedVarsVersion = "1.0"
 
 local SavedDyeSetsGroup = nil
 
---[[local deleteButton = nil
+local control = nil
+local dropdown = nil
 local saveButton = nil
-local loadButton = nil
-local dropdown = nil]]
+local deleteButton = nil
 
 local function LoadDyes(name)
     d("Loading dye sets...")
@@ -14,9 +14,9 @@ local function LoadDyes(name)
     --local name = dropdown.entry --???
     --local primaryDyeId, secondaryDyeId, accentDyeId
 
-    if savedVars[name] then
+    if savedVars.dyeSets[name] then
         for i = 1, 4, 1 do
-            SetSavedDyeSetDyes(i, savedVars[name]["primary" .. i], savedVars[name]["secondary" .. i], savedVars[name]["accent" .. i])
+            SetSavedDyeSetDyes(i, savedVars.dyeSets[name]["primary" .. i], savedVars.dyeSets[name]["secondary" .. i], savedVars.dyeSets[name]["accent" .. i])
         	DYEING:RefreshSavedSet(i)
         end
 
@@ -35,15 +35,15 @@ local function SaveDyes(name)
     for i = 1, 4, 1 do
         local primaryDyeId, secondaryDyeId, accentDyeId = GetSavedDyeSetDyes(i)
 
-        if savedVars[name] then
-        	savedVars[name]["primary" .. i] = primaryDyeId
-        	savedVars[name]["secondary" .. i] = secondaryDyeId
-        	savedVars[name]["accent" .. i] = accentDyeId
+        if savedVars.dyeSets[name] then
+        	savedVars.dyeSets[name]["primary" .. i] = primaryDyeId
+        	savedVars.dyeSets[name]["secondary" .. i] = secondaryDyeId
+        	savedVars.dyeSets[name]["accent" .. i] = accentDyeId
         else
-        	savedVars[name] = {}
-        	savedVars[name]["primary" .. i] = primaryDyeId
-        	savedVars[name]["secondary" .. i] = secondaryDyeId
-        	savedVars[name]["accent" .. i] = accentDyeId
+        	savedVars.dyeSets[name] = {}
+        	savedVars.dyeSets[name]["primary" .. i] = primaryDyeId
+        	savedVars.dyeSets[name]["secondary" .. i] = secondaryDyeId
+        	savedVars.dyeSets[name]["accent" .. i] = accentDyeId
         end
     end
 
@@ -53,91 +53,21 @@ end
 local function DeleteDyes(name)
     d("Deleting dye sets...")
     --local name = dropdown.entry --???
-    if savedVars[name] then
-    	savedVars[name] = nil
+    if savedVars.dyeSets[name] then
+    	savedVars.dyeSets[name] = nil
     	d("Dye sets deleted. (" .. name .. ")")
     else
     	d("Set does not exist.")
     end
 end
 
---[[local function ButtonClickHandler(button)
-    if button.load == true then
-        LoadDyes()
-    elseif button.save == true then
-        SaveDyes()
-    else
-        DeleteDyes()
-    end
-end
-
-local function CreateDropdown()
-	dropdown = WINDOW_MANAGER:CreateControl(ZO_DyeingTopLevelTabs:GetName() .. "_Dropdown", ZO_DyeingTopLevelTabs, CT_EDITBOX)
-	--dropdown:SetText("Load")
-	--dropdown:SetFont("ZoFontGameBold")
-	dropdown:SetDimensions(110, 20)
-	dropdown:SetAnchor(RIGHT, ZO_DyeingTopLevelTabs_LoadButton, LEFT, 0, 0)
-	--dropdown:SetHandler("OnClicked", ButtonClickHandler)
-	dropdown:SetMouseEnabled(true)
-	dropdown:SetHidden(true)
-	--dropdown:SetNormalFontColor(0.77254903316498, 0.76078432798386, 0.61960786581039, 1)
-	--dropdown:SetPressedFontColor(0.68627452850342, 0.68627452850342, 0.68627452850342, 1)
-	--dropdown:SetClickSound(SOUNDS.DIALOG_ACCEPT)
-end
-
-local function CreateLoadButton()
-	loadButton = WINDOW_MANAGER:CreateControl(ZO_DyeingTopLevelTabs:GetName() .. "_LoadButton", ZO_DyeingTopLevelTabs, CT_BUTTON)
-	loadButton:SetText("Load")
-	loadButton:SetFont("ZoFontGameBold")
-	loadButton:SetDimensions(60, 20)
-	loadButton:SetAnchor(RIGHT, ZO_DyeingTopLevelTabs_SaveButton, LEFT, 0, 0)
-	loadButton:SetHandler("OnClicked", ButtonClickHandler)
-	loadButton:SetMouseEnabled(true)
-	loadButton:SetHidden(true)
-	loadButton:SetNormalFontColor(0.77254903316498, 0.76078432798386, 0.61960786581039, 1)
-	loadButton:SetPressedFontColor(0.68627452850342, 0.68627452850342, 0.68627452850342, 1)
-	loadButton:SetClickSound(SOUNDS.DIALOG_ACCEPT)
-
-	loadButton.load = true
-end
-
-local function CreateSaveButton()
-	saveButton = WINDOW_MANAGER:CreateControl(ZO_DyeingTopLevelTabs:GetName() .. "_SaveButton", ZO_DyeingTopLevelTabs, CT_BUTTON)
-	saveButton:SetText("Save")
-	saveButton:SetFont("ZoFontGameBold")
-	saveButton:SetDimensions(60, 20)
-	saveButton:SetAnchor(RIGHT, ZO_DyeingTopLevelTabs_DeleteButton, LEFT, 0, 0)
-	saveButton:SetHandler("OnClicked", ButtonClickHandler)
-	saveButton:SetMouseEnabled(true)
-	saveButton:SetHidden(true)
-	saveButton:SetNormalFontColor(0.77254903316498, 0.76078432798386, 0.61960786581039, 1)
-	saveButton:SetPressedFontColor(0.68627452850342, 0.68627452850342, 0.68627452850342, 1)
-	saveButton:SetClickSound(SOUNDS.DIALOG_ACCEPT)
-
-	saveButton.save = true
-end
-
-local function CreateDeleteButton()
-	deleteButton = WINDOW_MANAGER:CreateControl(ZO_DyeingTopLevelTabs:GetName() .. "_DeleteButton", ZO_DyeingTopLevelTabs, CT_BUTTON)
-	deleteButton:SetText("Delete")
-	deleteButton:SetFont("ZoFontGameBold")
-	deleteButton:SetDimensions(60, 20)
-	deleteButton:SetAnchor(RIGHT, ZO_DyeingTopLevelTabsLabel, LEFT, 0, 0)
-	deleteButton:SetHandler("OnClicked", ButtonClickHandler)
-	deleteButton:SetMouseEnabled(true)
-	deleteButton:SetHidden(true)
-	deleteButton:SetNormalFontColor(0.77254903316498, 0.76078432798386, 0.61960786581039, 1)
-	deleteButton:SetPressedFontColor(0.68627452850342, 0.68627452850342, 0.68627452850342, 1)
-	deleteButton:SetClickSound(SOUNDS.DIALOG_ACCEPT)
-end]]
-
 local function DyeStationClosed()
-    SavedDyeSetsGroup:SetHidden(true)
+    control:SetHidden(true)
 	SLASH_COMMANDS["/dyeset"] = nil
 end
 
 local function DyeStationOpened()
-    SavedDyeSetsGroup:SetHidden(false)
+    control:SetHidden(false)
     --[[deleteButton:SetHidden(false)
     saveButton:SetHidden(false)
    	loadButton:SetHidden(false)
@@ -153,16 +83,6 @@ local function DyeStationOpened()
         	end
     	end
 
-    	--d(options)
-
-    	--[[if options[2] == nil then return end
-    	local set = options[2]
-    	for i = 3, #options, 1 do
-    		set = set .. " " .. options[i]
-    	end
-
-    	d("concated")]]
-
     	if options[1] == "load" then LoadDyes(options[2]) end
     	if options[1] == "save" then SaveDyes(options[2]) end
     	if options[1] == "delete" then DeleteDyes(options[2]) end
@@ -174,21 +94,85 @@ local function DyeStationOpened()
 	end
 end
 
+local function OnDropdownSelect(self)  --self?
+    LoadDyes()
+end
+
+local function OnButtonClicked(button)
+    if button.save then
+
+    else
+
+    end
+end
+
+local function PopulateDropdown()
+    local comboBox = dropdown.m_comboBox
+    comboBox:SetSortsItems(true)
+
+    for i,v in pairs(dyeSets) do
+        comboBox:AddItem(ZO_ComboBox:CreateItemEntry(tooltipSet[i], function()
+            OnDropdownSelect(v) end))
+    end
+
+    comboBox:SetSelectedItemFont("ZoFontGameSmall")
+    comboBox:SetDropdownFont("ZoFontGameSmall")
+    comboBox.m_selectedItemText:SetText("Load sets...")
+end
+
+local function InitializeControls()
+    local parent = ZO_DyeingTopLevel
+    local name = "SavedDyeSets"
+
+    control = WINDOW_MANAGER:CreateControl(name, parent, CT_CONTROL)
+    control:SetAnchor(LEFT, ZO_DyeingTopLevelSavedSetsHeader, RIGHT, 0, 0)
+    control:SetDimensions(ZO_DyeingTopLevelTools:GetWidth(), ZO_DyeingTopLevelTools:GetHeight())
+    control:SetHidden(true)
+    
+    dropdown = WINDOW_MANAGER:CreateControlFromVirtual(name .. "LoadDyesDropdown", control, "ZO_ComboBox")
+    dropdown:SetAnchor(LEFT, control, LEFT, 10, 0)
+    dropdown:SetHeight(27)
+    dropdown:SetWidth(136)
+
+    saveButton = WINDOW_MANAGER:CreateControl(name .. "SaveDyesButton", control, CT_BUTTON)
+    saveButton:SetText("Save Sets")
+    saveButton:SetFont("ZoFontGameBold")
+    saveButton:SetDimensions(73, 22)
+    saveButton:SetAnchor(LEFT, dropdown, RIGHT, 5, 0)
+    saveButton:SetHandler("OnClicked", OnButtonClicked)
+    saveButton:SetMouseEnabled(true)
+    saveButton:SetHidden(false)
+    saveButton:SetNormalFontColor(0.77254903316498, 0.76078432798386, 0.61960786581039, 1)
+    saveButton:SetPressedFontColor(0.68627452850342, 0.68627452850342, 0.68627452850342, 1)
+    saveButton:SetClickSound(SOUNDS.DIALOG_ACCEPT)
+    saveButton.save = true
+
+    deleteButton = WINDOW_MANAGER:CreateControl(name .. "DeleteDyesButton", control, CT_BUTTON)
+    deleteButton:SetText("Delete Sets")
+    deleteButton:SetFont("ZoFontGameBold")
+    deleteButton:SetDimensions(85, 22)
+    deleteButton:SetAnchor(LEFT, saveButton, RIGHT, 5, 0)
+    deleteButton:SetHandler("OnClicked", OnButtonClicked)
+    deleteButton:SetMouseEnabled(true)
+    deleteButton:SetHidden(false)
+    deleteButton:SetNormalFontColor(0.77254903316498, 0.76078432798386, 0.61960786581039, 1)
+    deleteButton:SetPressedFontColor(0.68627452850342, 0.68627452850342, 0.68627452850342, 1)
+    deleteButton:SetClickSound(SOUNDS.DIALOG_ACCEPT)
+    deleteButton.delete = true
+end
+
 local function SavedDyeSetsOnLoaded(eventCode, addonName)
     if addonName ~= "SavedDyeSets" then return end
     EVENT_MANAGER:UnregisterForEvent("SavedDyeSetsOnLoaded", EVENT_ADD_ON_LOADED)
 
     local default = {}
-    savedVars = ZO_SavedVars:New("SavedDyeSets", savedVarsVersion, nil, default)
+    savedVars = ZO_SavedVars:NewAccountWide("SavedDyeSets", savedVarsVersion, nil, default)
+    savedVars.dyeSets = savedVars.dyeSets or {}
+
+    InitializeControls()
 
     EVENT_MANAGER:RegisterForEvent("DyeStationOpened", EVENT_DYEING_STATION_INTERACT_START, DyeStationOpened)
     EVENT_MANAGER:RegisterForEvent("DyeStationClosed", EVENT_DYEING_STATION_INTERACT_END, DyeStationClosed)
-
-    SavedDyeSetsGroup = SavedDyeSetGroup:New()
-    --[[CreateDeleteButton()
-    CreateSaveButton()
-    CreateLoadButton()
-    CreateDropdown()]]
 end
 
 EVENT_MANAGER:RegisterForEvent("SavedDyeSetsOnLoaded", EVENT_ADD_ON_LOADED, SavedDyeSetsOnLoaded)
