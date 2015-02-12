@@ -1,115 +1,38 @@
-local savedVars = nil
-local savedVarsVersion = "1.1"
+local SDSData = nil
 
 local control = nil
 local dropdown = nil
 local saveButton = nil
 local deleteButton = nil
 
-local function LoadDyes(name)
-    d("Loading dye sets...")
-
-    --local name = dropdown.entry --???
-    --local primaryDyeId, secondaryDyeId, accentDyeId
-
-    if savedVars.setTable[name] then
-        for i = 1, 4, 1 do
-            SetSavedDyeSetDyes(i, savedVars.setTable[name]["primary" .. i], savedVars.setTable[name]["secondary" .. i],
-                savedVars.setTable[name]["accent" .. i])
-        	DYEING:RefreshSavedSet(i)
-        end
-
-
-        d("Dye sets loaded. (" .. name .. ")")
-    else
-        d("Set does not exist.")
-    end
-end
-
-local function SaveDyes(name)
-    d("Saving dye sets...")
-
-    --local name = dropdown.entry --???
-
-    for i = 1, 4, 1 do
-        local primaryDyeId, secondaryDyeId, accentDyeId = GetSavedDyeSetDyes(i)
-
-        if savedVars.setTable[name] then
-        	savedVars.setTable[name]["primary" .. i] = primaryDyeId
-        	savedVars.setTable[name]["secondary" .. i] = secondaryDyeId
-        	savedVars.setTable[name]["accent" .. i] = accentDyeId
-        else
-        	savedVars.setTable[name] = {}
-        	savedVars.setTable[name]["primary" .. i] = primaryDyeId
-        	savedVars.setTable[name]["secondary" .. i] = secondaryDyeId
-        	savedVars.setTable[name]["accent" .. i] = accentDyeId
-        end
-    end
-
-    d("Dye sets saved. (" .. name .. ")")
-end
-
-local function DeleteDyes(name)
-    d("Deleting dye sets...")
-    --local name = dropdown.entry --???
-    if savedVars.setTable[name] then
-    	savedVars.setTable[name] = nil
-    	d("Dye sets deleted. (" .. name .. ")")
-    else
-    	d("Set does not exist.")
-    end
-end
-
 local function DyeStationClosed()
     control:SetHidden(true)
-	SLASH_COMMANDS["/dyeset"] = nil
-end
-
-local function DyeStationOpened()
-    control:SetHidden(false)
-    --[[deleteButton:SetHidden(false)
-    saveButton:SetHidden(false)
-   	loadButton:SetHidden(false)
-    dropdown:SetHidden(false)
-    ZO_DyeingTopLevelTabs:SetAnchor(RIGHT, ZO_DyeingTopLevel, RIGHT, 270, -330)]]
-
-    SLASH_COMMANDS["/dyeset"] = function(arg)
-    	local options = {}
-    	local searchResult = { string.match(arg,"^(%S*)%s*(.-)$") }
-    	for i,v in pairs(searchResult) do
-        	if (v ~= nil and v ~= "") then
-         		options[i] = string.lower(v)
-        	end
-    	end
-
-    	if options[1] == "load" then LoadDyes(options[2]) end
-    	if options[1] == "save" then SaveDyes(options[2]) end
-    	if options[1] == "delete" then DeleteDyes(options[2]) end
-    	--[[if options[1] == "list" then
-    		for i,_ in pairs(SavedDyeSetsData["default"][GetUnitName("player")]) do
-    			if i ~= "version" then d(i) end
-    		end
-    	end]]
-	end
-end
-
-local function OnDropdownSelect(name)  --self?
-    LoadDyes(name)
+    SLASH_COMMANDS["/dyeset"] = nil
 end
 
 local function OnButtonClicked(button)
-    if button.save then
-
+    if button.save == true then
+        d("save button clicked!")
+        ZO_Dialogs_ShowDialog("SAVE_DYESET")
     else
-
+        d("delete button clicked!")
+        ZO_Dialogs_ShowDialog("DELETE_DYESET")
     end
+end
+
+local function OnDropdownSelect(name)
+    SDSData:LoadDyeSet(name)
 end
 
 local function PopulateDropdown()
     local comboBox = dropdown.m_comboBox
-    comboBox:SetSortsItems(true)
+    local setTable = SDSData:GetSetTable()
 
-    for i,_ in pairs(savedVars.setTable) do
+    if setTable == nil then return end
+
+    comboBox:SetSortsItems(true)
+    comboBox:ClearItems()
+    for i,_ in pairs(setTable) do
         comboBox:AddItem(ZO_ComboBox:CreateItemEntry(i, function()
             OnDropdownSelect(i) end))
     end
@@ -117,6 +40,32 @@ local function PopulateDropdown()
     comboBox:SetSelectedItemFont("ZoFontGameSmall")
     comboBox:SetDropdownFont("ZoFontGameSmall")
     comboBox.m_selectedItemText:SetText("Load sets...")
+end
+
+local function DyeStationOpened()
+    PopulateDropdown()
+    control:SetHidden(false)
+
+    SLASH_COMMANDS["/dyeset"] = function(arg)
+        local options = {}
+        local searchResult = { string.match(arg,"^(%S*)%s*(.-)$") }
+        for i,v in pairs(searchResult) do
+            if (v ~= nil and v ~= "") then
+                options[i] = string.lower(v)
+            end
+        end
+
+        if options[1] == "load" then SDSData:LoadDyeSet(options[2]) end
+        if options[1] == "save" then SDSData:SaveDyeSet(options[2]) end
+        if options[1] == "delete" then SDSData:DeleteDyeSet(options[2]) end
+        if options[1] == "list" then
+            local setTable = SDSData:GetSetTable()
+
+            for i,_ in pairs(setTable) do
+                d(i)
+            end
+        end
+    end
 end
 
 local function InitializeControls()
@@ -165,8 +114,7 @@ local function SavedDyeSetsOnLoaded(eventCode, addonName)
     if addonName ~= "SavedDyeSets" then return end
     EVENT_MANAGER:UnregisterForEvent("SavedDyeSetsOnLoaded", EVENT_ADD_ON_LOADED)
 
-    local defaults = { setTable = {}, }
-    savedVars = ZO_SavedVars:New("SavedDyeSetsData", savedVarsVersion, nil, defaults)
+    SDSData = SavedDyeSetsData:New()
 
     InitializeControls()
 
