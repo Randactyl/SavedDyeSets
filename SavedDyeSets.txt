@@ -1,6 +1,6 @@
 ## Title: Saved Dye Sets
-## APIVersion: 100011
-## Version: 1.0.0.1
+## APIVersion: 100012
+## Version: 1.0.0.2
 ## Author: Randactyl
 ## SavedVariables: SavedDyeSets_SavedData
 
